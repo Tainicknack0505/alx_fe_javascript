@@ -24,9 +24,6 @@ function showRandomQuote() {
   quoteDisplay.innerHTML = `<p>${quotes[randomIndex].text}</p><p><em>Category: ${quotes[randomIndex].category}</em></p>`;
 }
 
-// Event listener for displaying a random quote
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
-
 
 // Function to add a new quote
 function addQuote() {
