@@ -112,7 +112,7 @@ function populateCategories() {
 }
 
 // Function to filter quotes based on selected category
-function filterCategory() {
+function filterQuotes() {
     const selectedCategory = document.getElementById('categoryFilter').value;
     const quoteDisplay = document.getElementById('quoteDisplay');
     let filteredQuotes = quotes;
@@ -141,74 +141,64 @@ function loadLastFilter() {
     }
 }
 
-// Simulate server interaction using JSONPlaceholder API
-const apiUrl = 'https://jsonplaceholder.typicode.com/quotes';
-
 // Function to fetch data from server
-async function fetchDataFromServer() {
-    try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching data from server:', error);
-    }
+async function fetchServerData() {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+    const serverQuotes = await response.json();
+    return serverQuotes.map(quote => ({
+        text: quote.body,
+        category: 'Server'
+    }));
+
 }
 
-// Function to post data to server
-async function postDataToServer(data) {
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error posting data to server:', error);
-    }
-  }
-  
-// Function to sync local data with server
-async function syncDataWithServer() {
-    const serverData = await fetchDataFromServer();
-    const localData = quotes;
-  
-    // Check for new quotes from server
-    const newQuotes = serverData.filter(quote => !localData.find(localQuote => localQuote.id === quote.id));
-    quotes = [...localData, ...newQuotes];
-  
-    // Check for conflicts
-    const conflicts = serverData.filter(quote => localData.find(localQuote => localQuote.id === quote.id && localQuote.text !== quote.text));
-    conflicts.forEach(conflict => {
-      const localQuote = localData.find(quote => quote.id === conflict.id);
-      if (localQuote) {
-        // Resolve conflict by taking server's data
-        localQuote.text = conflict.text;
-      }
-    });
-  
-    // Save updated local data to storage
-    localStorage.setItem('quotes', JSON.stringify(quotes));
-  
-    // Notify user of updates or conflicts
-    notifyUserOfUpdates(conflicts);
-  }
-  
-// Function to notify user of updates or conflicts
-function notifyUserOfUpdates(conflicts) {
-    const notificationElement = document.getElementById('notification');
-    if (conflicts.length > 0) {
-      notificationElement.textContent = `Conflicts resolved: ${conflicts.length} quotes updated`;
-    } else {
-      notificationElement.textContent = 'Data synced successfully!';
-    }
-  }
-  
-  // Periodically sync data with server
-  setInterval(syncDataWithServer, 10000); // sync every 10 seconds
-  
+// Function to sync data
+async function syncData() {
+    const serverQuotes = await fetchServerData();
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+    const mergedQuotes = [...serverQuotes, ...localQuotes];
+
+    // Remove duplicates by text
+    const uniqueQuotes = Array.from(new Set(mergedQuotes.map(quote => quote.text)))
+        .map(text => mergedQuotes.find(quote => quote.text === text));
+
+    localStorage.setItem('quotes', JSON.stringify(uniqueQuotes));
+    quotes = uniqueQuotes;
+    showRandomQuote();
+}
+
+// Call syncData every 5 minutes
+setInterval(syncData, 300000);
+
+
+// UI element for notifications
+const notificationElement = document.createElement('div');
+notificationElement.id = 'notification';
+document.body.appendChild(notificationElement);
+
+function notifyUser(message) {
+    notificationElement.textContent = message;
+    notificationElement.style.display = 'block';
+    setTimeout(() => {
+        notificationElement.style.display = 'none';
+    }, 5000);
+}
+
+
+// Manual conflict resolution
+document.getElementById('resolveConflictsButton').addEventListener('click', () => {
+    const serverQuotes = JSON.parse(localStorage.getItem('serverQuotes')) || [];
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+
+    const unresolvedConflicts = serverQuotes.filter(serverQuote => 
+        !localQuotes.some(localQuote => localQuote.text === serverQuote.text)
+    );
+
+    // Display unresolved conflicts for manual resolution
+    console.log('Unresolved Conflicts:', unresolvedConflicts);
+});
+
+
 // Initialize local data from storage
 loadQuotes();
   
