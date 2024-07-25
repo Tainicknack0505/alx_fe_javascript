@@ -143,7 +143,7 @@ function loadLastFilter() {
 
 // from here 
 // Simulate server interaction using JSONPlaceholder API
-const apiUrl = 'https://jsonplaceholder.typicode.com/quotes';
+const apiUrl = 'https://jsonplaceholder.typicode.com/posts';
 
 // Function to fetch data from server
 async function fetchQuotesFromServer() {
