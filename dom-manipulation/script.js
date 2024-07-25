@@ -54,7 +54,6 @@ function addQuote() {
     if (newQuoteText && newQuoteCategory) {
         quotes.push({ text: newQuoteText, category: newQuoteCategory });
         alert("Quote added successfully!");
-
         // Initial quote display
         showRandomQuote();
         document.getElementById('newQuoteText').value = '';
@@ -63,12 +62,56 @@ function addQuote() {
       alert("Please enter both quote text and category.");
     }
   }
+
+// Loading quotes from local storage
+function loadQuotes() {
+    const storedQuotes = localStorage.getItem('quotes');
+    if (storedQuotes){
+        quotes = JSON.parse(storedQuotes);
+    }
+  }
   
+// Saving quotes to local storage
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Exporting quotes to JSON file
+function exportToJsonFile() {
+    const jsonQuotes = JSON.stringify(quotes);
+    const blob = new Blob([jsonQuotes], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'quotes.json';
+    a.click();
+}
+
+// Importing quotes from JSON file
+function importFromJsonFile(event) {
+    const fileReader = new FileReader();
+    fileReader.onload = function(event) {
+        const importedQuotes = JSON.parse(event.target.result);
+        quotes.push(...importedQuotes)
+        saveQuotes();
+        alert('Quotes imported successfully!');
+    };
+    fileReader.readAsText(event.target.files[0]);
+}
+
+
+
 // Event listener for displaying a random quote
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Event listener for adding a new quote
 document.getElementById('addQuoteButton').addEventListener('click', addQuote);
+
+// Event listener for exporting JSON file
+document.getElementById('exportButton').addEventListener('click', exportToJsonFile);
+
+// Event listener for importing JSON file
+document.getElementById('importFile').addEventListener('change', importFromJsonFile);
 
 // Create the add quote form
 createAddQuoteForm();
