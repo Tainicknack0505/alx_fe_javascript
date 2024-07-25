@@ -141,63 +141,114 @@ function loadLastFilter() {
     }
 }
 
-// Function to fetch data from server
-async function fetchServerData() {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+// Step 1
+const serverUrl = 'https://jsonplaceholder.typicode.com/posts'; // Replace with appropriate mock API
+
+async function fetchServerQuotes() {
+    const response = await fetch(serverUrl);
     const serverQuotes = await response.json();
-    return serverQuotes.map(quote => ({
-        text: quote.body,
-        category: 'Server'
-    }));
-
+    return serverQuotes;
 }
 
-// Function to sync data
-async function syncData() {
-    const serverQuotes = await fetchServerData();
+async function postServerQuotes(newQuotes) {
+    const response = await fetch(serverUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newQuotes)
+    });
+    return await response.json();
+}
+
+setInterval(async () => {
+    const serverQuotes = await fetchServerQuotes();
+    syncQuotesWithServer(serverQuotes);
+}, 60000); // Fetch data every minute
+
+// Step 2
+async function syncQuotesWithServer(serverQuotes) {
     const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-    const mergedQuotes = [...serverQuotes, ...localQuotes];
+    let updatedQuotes = localQuotes;
 
-    // Remove duplicates by text
-    const uniqueQuotes = Array.from(new Set(mergedQuotes.map(quote => quote.text)))
-        .map(text => mergedQuotes.find(quote => quote.text === text));
+    serverQuotes.forEach(serverQuote => {
+        const exists = localQuotes.some(localQuote => localQuote.text === serverQuote.text);
+        if (!exists) {
+            updatedQuotes.push(serverQuote);
+        }
+    });
 
-    localStorage.setItem('quotes', JSON.stringify(uniqueQuotes));
-    quotes = uniqueQuotes;
+    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+    quotes = updatedQuotes;
+    populateCategories();
     showRandomQuote();
+    alert('Quotes synced with the server.');
 }
 
-// Call syncData every 5 minutes
-setInterval(syncData, 300000);
+async function addQuote() {
+    const newQuoteText = document.getElementById('newQuoteText').value;
+    const newQuoteCategory = document.getElementById('newQuoteCategory').value;
 
-
-// UI element for notifications
-const notificationElement = document.createElement('div');
-notificationElement.id = 'notification';
-document.body.appendChild(notificationElement);
-
-function notifyUser(message) {
-    notificationElement.textContent = message;
-    notificationElement.style.display = 'block';
-    setTimeout(() => {
-        notificationElement.style.display = 'none';
-    }, 5000);
+    if (newQuoteText && newQuoteCategory) {
+        const newQuote = { text: newQuoteText, category: newQuoteCategory };
+        quotes.push(newQuote);
+        await postServerQuotes(newQuote);
+        localStorage.setItem('quotes', JSON.stringify(quotes));
+        alert("Quote added successfully!");
+        showRandomQuote();
+        document.getElementById('newQuoteText').value = '';
+        document.getElementById('newQuoteCategory').value = '';
+    } else {
+        alert("Please enter both quote text and category.");
+    }
 }
 
-
-// Manual conflict resolution
-document.getElementById('resolveConflictsButton').addEventListener('click', () => {
-    const serverQuotes = JSON.parse(localStorage.getItem('serverQuotes')) || [];
+// Step 3
+async function syncQuotesWithServer(serverQuotes) {
     const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+    let updatedQuotes = [...localQuotes];
 
-    const unresolvedConflicts = serverQuotes.filter(serverQuote => 
-        !localQuotes.some(localQuote => localQuote.text === serverQuote.text)
-    );
+    serverQuotes.forEach(serverQuote => {
+        const localIndex = localQuotes.findIndex(localQuote => localQuote.text === serverQuote.text);
+        if (localIndex > -1) {
+            updatedQuotes[localIndex] = serverQuote; // Server data takes precedence
+        } else {
+            updatedQuotes.push(serverQuote);
+        }
+    });
 
-    // Display unresolved conflicts for manual resolution
-    console.log('Unresolved Conflicts:', unresolvedConflicts);
-});
+    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+    quotes = updatedQuotes;
+    populateCategories();
+    showRandomQuote();
+    alert('Quotes synced with the server.');
+}
 
+async function syncQuotesWithServer(serverQuotes) {
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+    let updatedQuotes = [...localQuotes];
+    let conflictsResolved = false;
+
+    serverQuotes.forEach(serverQuote => {
+        const localIndex = localQuotes.findIndex(localQuote => localQuote.text === serverQuote.text);
+        if (localIndex > -1) {
+            if (JSON.stringify(localQuotes[localIndex]) !== JSON.stringify(serverQuote)) {
+                updatedQuotes[localIndex] = serverQuote; // Server data takes precedence
+                conflictsResolved = true;
+            }
+        } else {
+            updatedQuotes.push(serverQuote);
+        }
+    });
+
+    localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+    quotes = updatedQuotes;
+    populateCategories();
+    showRandomQuote();
+    if (conflictsResolved) {
+        document.getElementById('conflictNotification').style.display = 'block';
+    } else {
+        document.getElementById('conflictNotification').style.display = 'none';
+    }
+}
 
 // Initialize local data from storage
 loadQuotes();
