@@ -19,7 +19,7 @@ let quotes = [
 
 // Function to show a random quote
 function showRandomQuote() {
-    const randomIndex = Math.floor(math.random() * quotes.length);
+    const randomIndex = Math.floor(Math.random() * quotes.length);
     const quoteDisplay = document.getElementById('quoteDisplay');
   quoteDisplay.innerHTML = `<p>${quotes[randomIndex].text}</p><p><em>Category: ${quotes[randomIndex].category}</em></p>`;
 }
