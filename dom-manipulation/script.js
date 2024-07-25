@@ -118,3 +118,6 @@ createAddQuoteForm();
 
 // Initial quote display
 showRandomQuote();
+
+// Load quotes
+loadQuotes();
