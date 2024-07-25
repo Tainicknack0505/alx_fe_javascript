@@ -99,7 +99,47 @@ function importFromJsonFile(event) {
     fileReader.readAsText(event.target.files[0]);
 }
 
+// Function to populate categories dynamically
+function populateCategories() {
+    const categoryFilter = document.getElementById('categoryFilter');
+    const uniqueCategories = [...new Set(quotes.map(quote => quote.category))];
+    uniqueCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.text = category;
+        categoryFilter.appendChild(option);
+    });
+}
 
+// Function to filter quotes based on selected category
+function filterCategory() {
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    let filteredQuotes = quotes;
+
+    if (selectedCategory !== 'all') {
+        filteredQuotes = quotes.filter(quote => quote.category === selectedCategory);
+    }
+
+    quoteDisplay.innerHTML = '';
+    filteredQuotes.forEach(quote => {
+        const quoteElement = document.createElement('p');
+        quoteElement.textContent = `${quote.text} - ${quote.category}`;
+        quoteDisplay.appendChild(quoteElement);
+    });
+
+    // Saving the last selected filter to local storage
+    localStorage.setItem('lastFilter', selectedCategory);
+}
+
+// Loading the last selected filter from local storage
+function loadLastFilter() {
+    const lastFilter = localStorage.getItem('lastFilter');
+    if (lastFilter) {
+        document.getElementById('categoryFilter').value = lastFilter;
+        filterQuotes();
+    }
+}
 
 // Event listener for displaying a random quote
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
@@ -118,6 +158,10 @@ document.getElementById('importButton').addEventListener('click', function() {
     document.getElementById('importFile').click();
   });
 
+// Event listener for filtering quote
+document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
+
+
 // Create the add quote form
 createAddQuoteForm();
 
@@ -126,3 +170,7 @@ showRandomQuote();
 
 // Load quotes
 loadQuotes();
+
+// Populating quote
+populateCategories();
+
