@@ -27,12 +27,23 @@ function showRandomQuote() {
 // Function to create the add quote form
 function createAddQuoteForm() {
     const addQuoteForm = document.getElementById('addQuoteForm');
-    const formHTML = `
-        <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-        <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-        <button onclick="addQuote()">Add Quote</button>
-    `;
-    addQuoteForm.innerHTML = formHTML;
+
+    const inputText = document.createElement('input');
+    inputText.id = 'newQuoteText';
+    inputText.type = 'text';
+    inputText.placeholder = 'Enter a new quote';
+    addQuoteForm.appendChild(inputText);
+
+    const inputCategory = document.createElement('input');
+    inputCategory.id = 'newQuoteCategory';
+    inputCategory.type = 'text';
+    inputCategory.placeholder = 'Enter quote category';
+    addQuoteForm.appendChild(inputCategory);
+
+    const button = document.createElement('button');
+    button.onclick = addQuote;
+    button.textContent = 'Add Quote';
+    addQuoteForm.appendChild(button);
 }
 
 // Function to add a new quote
@@ -43,8 +54,9 @@ function addQuote() {
     if (newQuoteText && newQuoteCategory) {
         quotes.push({ text: newQuoteText, category: newQuoteCategory });
         alert("Quote added successfully!");
-          // Initial quote display
-            showRandomQuote();
+
+        // Initial quote display
+        showRandomQuote();
         document.getElementById('newQuoteText').value = '';
         document.getElementById('newQuoteCategory').value = '';
     } else {
@@ -55,11 +67,11 @@ function addQuote() {
 // Event listener for displaying a random quote
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
-// Create the add quote form
-createAddQuoteForm();
-
 // Event listener for adding a new quote
 document.getElementById('addQuoteButton').addEventListener('click', addQuote);
+
+// Create the add quote form
+createAddQuoteForm();
 
 // Initial quote display
 showRandomQuote();
