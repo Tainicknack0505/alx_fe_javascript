@@ -113,6 +113,11 @@ document.getElementById('exportButton').addEventListener('click', exportToJsonFi
 // Event listener for importing JSON file
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
 
+// Event listener to handle the import button 
+document.getElementById('importButton').addEventListener('click', function() {
+    document.getElementById('importFile').click();
+  });
+
 // Create the add quote form
 createAddQuoteForm();
 
