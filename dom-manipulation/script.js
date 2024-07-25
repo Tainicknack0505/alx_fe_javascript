@@ -1,4 +1,7 @@
 
+// Simulating server interaction using JSONPlaceholder API
+const apiUrl = 'https://jsonplaceholder.typicode.com/quotes';
+
 // Adding Array of quotes for storage
 let quotes = [
     {
@@ -140,6 +143,80 @@ function loadLastFilter() {
         filterQuotes();
     }
 }
+
+// Function to fetch data from server
+async function fetchDataFromServer() {
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching data from server:', error);
+    }
+}
+
+// Function to post data to server
+async function postDataToServer(data) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error posting data to server:', error);
+    }
+  }
+  
+// Function to sync local data with server
+async function syncDataWithServer() {
+    const serverData = await fetchDataFromServer();
+    const localData = quotes;
+  
+    // Check for new quotes from server
+    const newQuotes = serverData.filter(quote => !localData.find(localQuote => localQuote.id === quote.id));
+    quotes = [...localData, ...newQuotes];
+  
+    // Check for conflicts
+    const conflicts = serverData.filter(quote => localData.find(localQuote => localQuote.id === quote.id && localQuote.text !== quote.text));
+    conflicts.forEach(conflict => {
+      const localQuote = localData.find(quote => quote.id === conflict.id);
+      if (localQuote) {
+        // Resolve conflict by taking server's data
+        localQuote.text = conflict.text;
+      }
+    });
+  
+    // Save updated local data to storage
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+  
+    // Notify user of updates or conflicts
+    notifyUserOfUpdates(conflicts);
+  }
+  
+// Function to notify user of updates or conflicts
+function notifyUserOfUpdates(conflicts) {
+    const notificationElement = document.getElementById('notification');
+    if (conflicts.length > 0) {
+      notificationElement.textContent = `Conflicts resolved: ${conflicts.length} quotes updated`;
+    } else {
+      notificationElement.textContent = 'Data synced successfully!';
+    }
+  }
+  
+  // Periodically sync data with server
+  setInterval(syncDataWithServer, 10000); // sync every 10 seconds
+  
+// Initialize local data from storage
+loadQuotes();
+  
+// Add event listener for manual conflict resolution
+document.getElementById('resolveConflictsButton').addEventListener('click', () => {
+    // Implement manual conflict resolution logic here
+    console.log('Manual conflict resolution not implemented yet');
+  });
 
 // Event listener for displaying a random quote
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
