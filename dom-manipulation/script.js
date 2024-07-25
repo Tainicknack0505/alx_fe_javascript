@@ -203,7 +203,7 @@ async function syncQuotes() {
     if (conflicts.length > 0) {
       notificationElement.textContent = `Conflicts resolved: ${conflicts.length} quotes updated`;
     } else {
-      notificationElement.textContent = 'Data synced successfully!';
+      notificationElement.textContent = '"Quotes synced with server!"';
     }
   }
   
