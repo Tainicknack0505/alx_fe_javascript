@@ -1,7 +1,4 @@
 
-// Simulating server interaction using JSONPlaceholder API
-const apiUrl = 'https://jsonplaceholder.typicode.com/quotes';
-
 // Adding Array of quotes for storage
 let quotes = [
     {
@@ -143,6 +140,9 @@ function loadLastFilter() {
         filterQuotes();
     }
 }
+
+// Simulate server interaction using JSONPlaceholder API
+const apiUrl = 'https://jsonplaceholder.typicode.com/quotes';
 
 // Function to fetch data from server
 async function fetchDataFromServer() {
