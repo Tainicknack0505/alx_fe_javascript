@@ -34,13 +34,22 @@ function addQuote() {
     const newQuoteCategory = document.getElementById('newQuoteCategory').value;
 
     if (newQuoteText && newQuoteCategory) {
-     
         quotes.push({ text: newQuoteText, category: newQuoteCategory });
         alert("Quote added successfully!");
+          // Initial quote display
+            showRandomQuote();
+        document.getElementById('newQuoteText').value = '';
+        document.getElementById('newQuoteCategory').value = '';
     } else {
       alert("Please enter both quote text and category.");
     }
   }
   
-  // Initial quote display
-  showRandomQuote();
+// Event listener for displaying a random quote
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
+// Event listener for adding a new quote
+document.getElementById('addQuoteButton').addEventListener('click', addQuote);
+
+// Initial quote display
+showRandomQuote();
